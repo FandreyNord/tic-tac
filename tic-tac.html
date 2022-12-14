@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>tic-tac</title>
+</head>
+<style type="text/css">
+	.cell {
+    width: 100px;
+    border: 6px outset #040404;
+    height: 100px;
+    text-align: center;
+    font-size: 70px;
+}
+	.field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+    .cell:hover {
+    background: #f9ead6;  
+} 
+	.row {
+    display: flex;
+    flex-direction: row;
+}
+.modal {
+  display: none; /* Скрыто по умолчанию */
+  position: fixed; /* Оставаться на месте */
+  z-index: 1; /* Сидеть на вершине */
+  left: 0;
+  top: 0;
+  width: 100%; /* Полная ширина */
+  height: 100%; /* Полная высота */
+  overflow: auto; /* Включите прокрутку, если это необходимо */
+  background-color: rgb(0,0,0); /* Цвет запасной вариант */
+  background-color: rgba(0,0,0,0.4); /* Черный с непрозрачностью */
+}
+
+/* Модальное содержание/коробка */
+.modal-content {
+    background-color: #26aabf;
+    margin: 15% auto;
+    padding: 26px;
+    border: 1px solid #888;
+    width: 34%;
+}
+
+/* Кнопка закрытия */
+.close {
+    color: #1bff00;
+    float: right;
+    font-size: 50px;
+    font-weight: bold;
+}
+.textInModal{
+	font-size: 50px;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+</style>
+<body>
+	<div class="field" id="field"></div>
+	<!-- Модальный -->
+<div id="myModal" class="modal">
+
+  <!-- Модальное содержание -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="textInModal" class="textInModal"></div>
+  </div>
+</div>
+</body>
+<script type="text/javascript">
+	function Modal(array){
+	let modal = document.getElementById("myModal");
+	let textInModal = document.getElementById("textInModal");
+	let span = document.getElementsByClassName("close")[0];
+	textInModal.innerHTML = `Победили "${array}"!`
+	modal.style.display = "block";
+	span.onclick = function() {
+  	modal.style.display = "none";
+}
+	window.onclick = function(event) {
+  	if (event.target == modal) {
+    modal.style.display = "none";
+  	}
+}
+	}
+	
+	let i = 0
+	const field = document.querySelector('.field')
+	const size=3
+	const winIndex = 3
+
+	let array = new Array(size)
+	for(let i=0;i<size;i++)
+		array[i] = new Array(size)
+
+	for(let i=0;i<size;i++){
+		let row = document.createElement('div')
+		for(let j=0;j<size;j++){
+			row.classList.add('row')
+			row.innerHTML+=`<div class="cell" id="${i}_${j}"></div>`
+		}
+		field.appendChild(row)
+	}
+	
+	window.onload = function(){
+	document.getElementById('field').onclick = function(event){
+		let element = event.srcElement
+		let id = element.id
+		let arrayId = id.split('_')
+		let X = Number(arrayId[1])
+		let Y = Number(arrayId[0])
+		if (i%2==0){
+		element.innerHTML ='x'
+		array[Y][X] = 'x'
+	}
+		else{
+		element.innerHTML ='o'
+		array[Y][X] = 'o'
+	}
+	i++
+		MainDiagonal(Y,X,size,winIndex,array)
+		SecondaryDiagonal(Y,X,size,winIndex,array)
+		Vertical(Y,X,size,winIndex,array)
+		Horizontal(Y,X,size,winIndex,array)
+
+	}	
+}
+	function MainDiagonal(Y,X,size,winIndex,array){
+		let count = 0
+		let index = 0
+		let pseudoYStart = Y-winIndex+1
+		let pseudoXStart = X-winIndex+1
+		let pseudoYEnd = Y+winIndex-1
+		let pseudoXEnd = X+winIndex-1
+
+		while(pseudoYStart<0){
+			pseudoYStart++
+			index++
+		}
+		pseudoXStart+=index
+		index=0
+		while(pseudoYEnd>size-1){
+			pseudoYEnd--
+			index++
+		}
+		pseudoXEnd+=index
+
+		while(pseudoYStart<=pseudoYEnd&&pseudoXStart<=pseudoXEnd){	
+			if(array[pseudoYStart][pseudoXStart]==array[Y][X])
+				count++
+			pseudoYStart++
+			pseudoXStart++
+		}
+		if (count>=winIndex){
+			
+			Modal(array[Y][X])
+		}
+}
+	function SecondaryDiagonal(Y,X,size,winIndex,array){
+		let count = 0
+		let index = 0
+		let pseudoYStart = Y-winIndex+1
+		let pseudoXStart = X+winIndex-1
+		let pseudoYEnd = Y+winIndex-1
+		let pseudoXEnd = X-winIndex+1
+
+		while(pseudoYStart<0){
+			pseudoYStart++
+			index++
+		}
+		pseudoXStart-=index
+		index=0
+		while(pseudoYEnd>size-1){
+			pseudoYEnd--
+			index++
+		}
+		pseudoXEnd+=index
+		while(pseudoYStart<=pseudoYEnd&&pseudoXStart>=pseudoXEnd){	
+			if(array[pseudoYStart][pseudoXStart]==array[Y][X])
+				count++
+			pseudoYStart++
+			pseudoXStart--
+		}
+		if (count>=winIndex){
+			
+			Modal(array[Y][X])
+		}
+}
+	function Vertical(Y,X,size,winIndex,array){
+		let count = 0
+		let pseudoYStart = Y-winIndex+1
+		let pseudoXStart = X
+		let pseudoYEnd = Y+winIndex-1
+		while(pseudoYStart<0){
+			pseudoYStart++
+		}
+		while(pseudoYEnd>size-1){
+			pseudoYEnd--
+		}
+		while(pseudoYStart<=pseudoYEnd){	
+			if(array[pseudoYStart][pseudoXStart]==array[Y][X])
+				count++
+			pseudoYStart++
+		}
+		if (count>=winIndex){
+			
+			Modal(array[Y][X])
+		}		
+}
+function Horizontal(Y,X,size,winIndex,array){
+		let count = 0
+		let pseudoYStart = Y
+		let pseudoXStart = X-winIndex+1
+		let pseudoXEnd = X+winIndex-1
+		while(pseudoXStart<0){
+			pseudoXStart++
+		}
+		while(pseudoXEnd>size-1){
+			pseudoXEnd--
+		}
+		while(pseudoXStart<=pseudoXEnd){	
+			if(array[pseudoYStart][pseudoXStart]==array[Y][X])
+				count++
+			pseudoXStart++
+		}
+		if (count>=winIndex){
+			
+			Modal(array[Y][X])
+		}		
+}
+</script>
+</html>
